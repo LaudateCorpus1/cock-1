@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "webapp",
+			"path": "webapp"
+		},
+		{
+			"name": "cock",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
