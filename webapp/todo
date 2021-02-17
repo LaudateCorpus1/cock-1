@@ -1,0 +1,28 @@
+- better format for config
+  basically, think the task stuff though, maybe we should create a TaskManager or something
+  idk yet
+
+- historical view
+  where we view stored task bars day-aligned
+
+- ideal adjusted view
+  ideal day in config should mark which tasks are important (maybe in order of importance?)
+  non-important tasks get shrunk first (emptyTask, then longest tasks not marked as unshrinkable)
+
+  there will be a point where there is really no ideal view (since you have wasted so much time),
+  how do we render that?
+    how do we mark the tasks that we must do no matter what? does adjusted ideal bleed past 24 hours?
+
+- historical view in the same view as the wake bar views
+  tl;dr i want to make wake bars (ideal, adj. ideal, current) day-aligned, rather than wake-aligned
+
+  how do we handle scenarios where you stay up longer than expected? how does that get rendered?
+
+- x factor
+  keep track of which tasks we do that should be kept track of per-day on a calendar view
+
+- ideal days (per week)
+
+- calendar tasks
+
+- ???
