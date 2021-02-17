@@ -1,14 +1,10 @@
-import * as config from "./config";
-import { Hours } from "./config.common";
-import "./App.css";
 import { useEffect, useState } from "react";
-
-// at which time is kept track of in bars
-const TICKS_PER_SECOND = 30;
-// at which we trigger a new render of the bars
-const FRAMES_PER_SECOND = 1;
-// localstorage item name (keeping track of task completions)
-const STORAGE_COMPLETIONS = "completions";
+import { connect } from "react-redux";
+import { STORAGE_COMPLETIONS } from "./constants";
+import * as config from "./config";
+import { completeTask, startDay, stopDay, undoCompletion } from "./app.slice";
+import { Hours, TaskDuration } from "./config.common";
+import "./App.css";
 
 function BarSegment(props) {
   let { barDuration, segment } = props;
@@ -67,25 +63,71 @@ function IdealBar(props) {
   );
 }
 
-function TodayControls() {
+function TodayControls(props) {
+  let { startDay, stopDay, undoCompletion, completeTask } = props;
   return (
     <div className="today-controls">
-      <button>Stop day</button> <button>Start day</button>{" "}
-      <button>Undo completion</button> <button>Mark complete: TODO</button>
+      <button onClick={() => stopDay()}>Stop day</button>{" "}
+      <button onClick={() => startDay()}>Start day</button>{" "}
+      <button onClick={() => undoCompletion()}>Undo completion</button>{" "}
+      <button onClick={() => completeTask()}>Mark complete: TODO</button>
     </div>
   );
 }
+TodayControls = connect(null, {
+  startDay,
+  stopDay,
+  completeTask,
+  undoCompletion,
+})(TodayControls);
 
-function TodayView() {
+function TodayView(props) {
+  let { startTime, currentTime, taskCompletions } = props;
+
   let idealBarDuration = Hours(24) - config.sleepTime;
-  // TODO: barDuration
-  let maxDuration = Math.max(idealBarDuration);
+  let barDuration = currentTime / 60 - startTime / 60;
+  let barSegments = [];
+  for (let i = 0; i < taskCompletions.length; i++) {
+    let taskCompletedTime = taskCompletions[i];
+    let task = config.idealDay[i];
+    if (task == null) break; // TODO: handle this error (because we shouldn't push completion times for nonexistent tasks)
+    let lastCompletedTime = null;
+    if (i !== 0) {
+      lastCompletedTime = taskCompletions[i - 1];
+    } else {
+      lastCompletedTime = startTime;
+    }
+    let completedTaskDuration = taskCompletedTime / 60 - lastCompletedTime / 60;
+    barSegments.push(new TaskDuration(task.task, completedTaskDuration));
+  }
+  let currentTask = config.idealDay[taskCompletions.length];
+  if (currentTask == null) {
+    // TODO: handle this error (because ticking should stop when we complete all tasks)
+    currentTask = config.idealDay[config.idealDay.length - 1];
+  }
+  let lastCompletedTime = null;
+  if (taskCompletions.length) {
+    lastCompletedTime = taskCompletions[taskCompletions.length - 1];
+  } else {
+    lastCompletedTime = startTime;
+  }
+  let currentTaskDuration = currentTime / 60 - lastCompletedTime / 60;
+  barSegments.push(new TaskDuration(currentTask.task, currentTaskDuration));
+
+  let maxDuration = Math.max(idealBarDuration, barDuration);
   return (
     <div className="today-view">
       <div className="today-view-inner">
         <IdealBar maxDuration={maxDuration} duration={idealBarDuration} />
         <br />
-        <IdealBar maxDuration={maxDuration} duration={idealBarDuration} />
+        <Bar
+          name={`Now: ${currentTask.task.name} (duration: ${Math.round(
+            currentTaskDuration
+          )} minutes ${Math.round((currentTaskDuration * 60) % 60)} seconds)`}
+          maxDuration={maxDuration}
+          duration={barDuration}
+          segments={barSegments}
+        />
         <br />
         <br />
         <TodayControls />
@@ -93,6 +135,11 @@ function TodayView() {
     </div>
   );
 }
+TodayView = connect((state) => ({
+  startTime: state.startTime,
+  currentTime: state.currentTime,
+  taskCompletions: state.taskCompletions,
+}))(TodayView);
 
 function Header() {
   return (
