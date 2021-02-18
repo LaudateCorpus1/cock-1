@@ -18,7 +18,7 @@ function formatDuration(ms) {
     "milliseconds"
   );
   let text = [];
-  let hours = Math.floor(duration.as("hours"));
+  let hours = duration.hours;
   if (hours) {
     text.push(`${hours} hours`);
   }

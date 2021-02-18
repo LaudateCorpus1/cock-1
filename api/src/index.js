@@ -9,10 +9,20 @@ for (let task of config.tasks) {
 }
 
 // ensure idealDay has all the registered tasks
-for (let { taskId } of config.idealDay) {
+// and ensure durations add up to 24 hours
+let totalDuration = 0;
+for (let { taskId, duration } of config.idealDay) {
+  totalDuration += duration;
   if (tasks[taskId] == null) {
     throw new Error("Missing task: " + taskId);
   }
+}
+
+let TWENTY_FOUR_HOURS = 1000 * 60 * 60 * 24;
+let IDEAL_DAY_TOTAL_LENGTH = TWENTY_FOUR_HOURS - config.sleepTime;
+if (totalDuration !== IDEAL_DAY_TOTAL_LENGTH) {
+  let offByMinutes = (IDEAL_DAY_TOTAL_LENGTH - totalDuration) / (1000 * 60);
+  throw new Error(`ideal day is not complete (off by ${offByMinutes} minutes)`);
 }
 
 let state = {
