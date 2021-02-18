@@ -60,7 +60,7 @@ function Task(id, name, count = 1) {
     id: String(id),
     name: String(name),
     count: Number(count),
-    color: pickColor(),
+    color: id === "empty" ? "#DDDDDD" : pickColor(),
   };
 }
 
