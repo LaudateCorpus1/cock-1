@@ -66,11 +66,11 @@ function* connectionSaga() {
       process.env.REACT_APP_WEBSOCKET_ADDR
     );
 
-    let ingestTask = yield fork(connectionHandlerSaga, ws, msgChannel);
+    let handlerTask = yield fork(connectionHandlerSaga, ws, msgChannel);
     while (true) {
       const msg = yield take(wsChannel);
       if (msg.type === "error" || msg.type === "close") {
-        yield cancel(ingestTask);
+        yield cancel(handlerTask);
         break;
       }
     }
