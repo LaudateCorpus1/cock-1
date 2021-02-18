@@ -1,63 +1,123 @@
 import {
   all,
   call,
+  cancel,
   delay,
+  fork,
   put,
   race,
   select,
   take,
-  takeLatest,
 } from "redux-saga/effects";
 import {
+  replaceState,
+  setCurrentTime,
   startDay,
   stopDay,
-  setStartTime,
-  setCurrentTime,
   completeTask,
-  addCompletionTime,
+  undoCompletion,
 } from "./app.slice";
 import { TICKS_PER_SECOND } from "./constants";
+import createWebsocket from "./websocket.saga";
+
+function* outgoingSaga(ws) {
+  // TODO: i imagine we can simplify this quite a bit
+  while (true) {
+    const { _startDay, _stopDay, _completeTask, _undoCompletion } = yield race({
+      _startDay: take(startDay),
+      _stopDay: take(stopDay),
+      _completeTask: take(completeTask),
+      _undoCompletion: take(undoCompletion),
+    });
+
+    if (_startDay) {
+      ws.send("start-day");
+    } else if (_stopDay) {
+      ws.send("stop-day");
+    } else if (_completeTask) {
+      ws.send("complete-task");
+    } else if (_undoCompletion) {
+      ws.send("undo-completion");
+    }
+  }
+}
+
+function* incomingSaga(msgChannel) {
+  while (true) {
+    let msg = yield take(msgChannel);
+    let newState = JSON.parse(msg.data);
+    console.log(newState);
+    yield put(replaceState(newState));
+  }
+}
+
+function* connectionHandlerSaga(ws, msgChannel) {
+  yield all([
+    //
+    call(incomingSaga, msgChannel),
+    call(outgoingSaga, ws),
+  ]);
+}
+
+function* connectionSaga() {
+  while (true) {
+    let [ws, wsChannel, msgChannel] = yield call(
+      createWebsocket,
+      process.env.REACT_APP_WEBSOCKET_ADDR
+    );
+
+    let ingestTask = yield fork(connectionHandlerSaga, ws, msgChannel);
+    while (true) {
+      const msg = yield take(wsChannel);
+      if (msg.type === "error" || msg.type === "close") {
+        yield cancel(ingestTask);
+        break;
+      }
+    }
+    // wait some time before reconnecting
+    yield delay(1000);
+  }
+}
 
 function getCurrentTime(state) {
   return state.currentTime;
 }
 
-function getNow() {
-  return Math.floor(Date.now() / 1000);
-}
-
-function* runDaySaga() {
-  yield put(setStartTime(getNow()));
+function* tickSaga() {
   while (true) {
     let storeCurrentTime = yield select(getCurrentTime);
-    let currentTime = getNow();
-    if (storeCurrentTime !== getNow()) {
+    let currentTime = Date.now();
+    let isSameSecond =
+      Math.floor(storeCurrentTime / 1000) === Math.floor(currentTime / 1000);
+    if (!isSameSecond) {
       yield put(setCurrentTime(currentTime));
     }
     yield delay(1000 / TICKS_PER_SECOND);
   }
 }
 
-function* taskCompletionTrackerSaga() {
+function* tickMonitorSaga() {
+  let tickTask = null;
   while (true) {
-    yield take(completeTask);
-    yield put(addCompletionTime(getNow()));
+    let { payload: newState } = yield take(replaceState);
+    if (!newState.running) {
+      if (tickTask) {
+        yield cancel(tickTask);
+        tickTask = null;
+      }
+    } else {
+      if (!tickTask) {
+        tickTask = yield fork(tickSaga);
+      }
+    }
   }
-}
-
-function* startDaySaga() {
-  yield race([
-    //
-    call(runDaySaga),
-    call(taskCompletionTrackerSaga),
-    take(stopDay),
-  ]);
 }
 
 function* appSaga() {
   yield all([
     //
-    takeLatest(startDay, startDaySaga),
+    call(tickMonitorSaga),
+    call(connectionSaga),
   ]);
 }
 

@@ -1,52 +1,52 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 let initialState = {
+  tasks: [],
+  idealDay: [],
+  completions: [],
   startTime: null,
-  currentTime: null,
-  taskCompletions: [],
+  running: false,
+
+  // app's
+  currentTime: Date.now(),
 };
 
 const authSlice = createSlice({
   name: "app",
   initialState,
   reducers: {
-    startDay(state) {
-      state.startTime = null;
-      state.currentTime = null;
-      state.taskCompletions = [];
-    },
-    stopDay(state) {
-      // empty action
-    },
-    setStartTime(state, action) {
-      state.startTime = action.payload;
+    replaceState(state, action) {
+      const {
+        tasks,
+        idealDay,
+        completions,
+        startTime,
+        running,
+      } = action.payload;
+      state.tasks = tasks;
+      state.idealDay = idealDay;
+      state.completions = completions;
+      state.startTime = startTime;
+      state.running = running;
     },
     setCurrentTime(state, action) {
       state.currentTime = action.payload;
     },
-    completeTask(state) {
-      // empty action
-    },
-    addCompletionTime(state, action) {
-      state.taskCompletions.push(action.payload);
-      console.log("completion list", Array.from(state.taskCompletions));
-    },
-    undoCompletion(state) {
-      if (state.taskCompletions.length) {
-        state.taskCompletions.pop();
-      }
-      console.log("completion list", Array.from(state.taskCompletions));
-    },
+    // empty actions for saga's websockes
+    startDay() {},
+    stopDay() {},
+    completeTask() {},
+    undoCompletion() {},
   },
 });
 
 export const {
+  replaceState,
+  setCurrentTime,
+
   startDay,
   stopDay,
-  setStartTime,
-  setCurrentTime,
   completeTask,
-  addCompletionTime,
   undoCompletion,
 } = authSlice.actions;
 

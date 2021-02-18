@@ -1,13 +1,17 @@
 {
-	"folders": [
-		{
-			"name": "webapp",
-			"path": "webapp"
-		},
-		{
-			"name": "cock",
-			"path": "."
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "api",
+      "path": "api"
+    },
+    {
+      "name": "webapp",
+      "path": "webapp"
+    },
+    {
+      "name": "cock",
+      "path": "."
+    }
+  ],
+  "settings": {}
 }

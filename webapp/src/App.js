@@ -1,10 +1,37 @@
+import { Duration } from "luxon";
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { STORAGE_COMPLETIONS } from "./constants";
-import * as config from "./config";
 import { completeTask, startDay, stopDay, undoCompletion } from "./app.slice";
-import { Hours, TaskDuration } from "./config.common";
 import "./App.css";
+
+const TWENTY_FOUR_HOURS = 1000 * 60 * 60 * 24;
+// TODO: handle sleepTime config
+const EIGHT_HOURS = 1000 * 60 * 60 * 8;
+
+function formatDuration(ms) {
+  if (ms < 0) ms = 0;
+  let duration = Duration.fromMillis(ms).shiftTo(
+    "hours",
+    "minutes",
+    "seconds",
+    "milliseconds"
+  );
+  let text = [];
+  let hours = Math.floor(duration.as("hours"));
+  if (hours) {
+    text.push(`${hours} hours`);
+  }
+  let minutes = duration.minutes;
+  if (minutes) {
+    text.push(`${minutes} minutes`);
+  }
+  let seconds = duration.seconds;
+  if (seconds || (!hours && !minutes)) {
+    text.push(`${duration.seconds} seconds`);
+  }
+  return text.join(" ");
+}
 
 function BarSegment(props) {
   let { barDuration, segment } = props;
@@ -12,7 +39,7 @@ function BarSegment(props) {
 
   return (
     <div
-      title={`${segment.task.name} (${segment.duration} minutes)`}
+      title={`${segment.task.name} (${formatDuration(segment.duration)})`}
       className="bar-segment"
       style={{
         width: `${segmentSizePercent}%`,
@@ -46,11 +73,11 @@ function Bar(props) {
 }
 
 function IdealBar(props) {
-  let { maxDuration, duration } = props;
+  let { tasks, idealDay, maxDuration, duration } = props;
   let segments = [];
 
-  for (let job of config.idealDay) {
-    segments.push(job);
+  for (let { taskId, duration } of idealDay) {
+    segments.push({ task: tasks[taskId], duration });
   }
 
   return (
@@ -82,48 +109,64 @@ TodayControls = connect(null, {
 })(TodayControls);
 
 function TodayView(props) {
-  let { startTime, currentTime, taskCompletions } = props;
+  let { tasks, idealDay, completions, startTime, running, currentTime } = props;
 
-  let idealBarDuration = Hours(24) - config.sleepTime;
-  let barDuration = currentTime / 60 - startTime / 60;
-  let barSegments = [];
-  for (let i = 0; i < taskCompletions.length; i++) {
-    let taskCompletedTime = taskCompletions[i];
-    let task = config.idealDay[i];
-    if (task == null) break; // TODO: handle this error (because we shouldn't push completion times for nonexistent tasks)
-    let lastCompletedTime = null;
-    if (i !== 0) {
-      lastCompletedTime = taskCompletions[i - 1];
+  function determineLastCompletedTime(idx = 0) {
+    if (completions.length > idx) {
+      return completions[completions.length - (1 + idx)];
     } else {
-      lastCompletedTime = startTime;
+      return startTime;
     }
-    let completedTaskDuration = taskCompletedTime / 60 - lastCompletedTime / 60;
-    barSegments.push(new TaskDuration(task.task, completedTaskDuration));
   }
-  let currentTask = config.idealDay[taskCompletions.length];
-  if (currentTask == null) {
-    // TODO: handle this error (because ticking should stop when we complete all tasks)
-    currentTask = config.idealDay[config.idealDay.length - 1];
+
+  let idealBarDuration = TWENTY_FOUR_HOURS - EIGHT_HOURS;
+  let barDuration = currentTime - startTime + 1; // TODO: let's not have the +1 there, and fix the rendering glitch properly
+  let barSegments = [];
+  for (let i = 0; i < completions.length; i++) {
+    let completedTime = completions[i];
+    let { taskId } = idealDay[i];
+    let task = tasks[taskId];
+
+    // determine last completed time
+    let lastCompletedTime = determineLastCompletedTime(1);
+    let completedDuration = completedTime / lastCompletedTime;
+    barSegments.push({ task, duration: completedDuration });
   }
-  let lastCompletedTime = null;
-  if (taskCompletions.length) {
-    lastCompletedTime = taskCompletions[taskCompletions.length - 1];
-  } else {
-    lastCompletedTime = startTime;
+
+  // if there's a task in progress, add a segment for that too
+  let currentBarDescription = "Not started";
+  if (running && completions.length !== idealDay.length) {
+    let { taskId, duration: idealDuration } = idealDay[completions.length];
+    let task = tasks[taskId];
+    let lastCompletedTime = determineLastCompletedTime(0);
+    let currentTaskDuration = currentTime - lastCompletedTime;
+
+    let descTarget = `(target: ${formatDuration(idealDuration)})`;
+    let descDuration = `(duration: ${formatDuration(currentTaskDuration)})`;
+
+    currentBarDescription = `Now: ${task.name} ${descTarget} ${descDuration})`;
+
+    barSegments.push({ task, duration: currentTaskDuration });
   }
-  let currentTaskDuration = currentTime / 60 - lastCompletedTime / 60;
-  barSegments.push(new TaskDuration(currentTask.task, currentTaskDuration));
+
+  if (!running) {
+    currentBarDescription = "(stopped) " + currentBarDescription;
+  }
 
   let maxDuration = Math.max(idealBarDuration, barDuration);
+
   return (
     <div className="today-view">
       <div className="today-view-inner">
-        <IdealBar maxDuration={maxDuration} duration={idealBarDuration} />
+        <IdealBar
+          tasks={tasks}
+          idealDay={idealDay}
+          maxDuration={maxDuration}
+          duration={idealBarDuration}
+        />
         <br />
         <Bar
-          name={`Now: ${currentTask.task.name} (duration: ${Math.round(
-            currentTaskDuration
-          )} minutes ${Math.round((currentTaskDuration * 60) % 60)} seconds)`}
+          name={currentBarDescription}
           maxDuration={maxDuration}
           duration={barDuration}
           segments={barSegments}
@@ -136,9 +179,12 @@ function TodayView(props) {
   );
 }
 TodayView = connect((state) => ({
+  tasks: state.tasks,
+  idealDay: state.idealDay,
+  completions: state.completions,
   startTime: state.startTime,
+  running: state.running,
   currentTime: state.currentTime,
-  taskCompletions: state.taskCompletions,
 }))(TodayView);
 
 function Header() {

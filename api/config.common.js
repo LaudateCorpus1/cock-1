@@ -7,8 +7,8 @@ let nonFloat = (x) => {
     return x;
   }
 };
-export let Minutes = (x) => nonFloat(x);
-export let Hours = (x) => nonFloat(x) * Minutes(60);
+let Minutes = (x) => nonFloat(x) * 60 * 1000;
+let Hours = (x) => nonFloat(x) * Minutes(60);
 
 let colors = [
   "#d81b60",
@@ -55,48 +55,30 @@ function pickColor() {
   return selectedColor;
 }
 
-export class Task {
-  constructor(id, name, count = 1) {
-    this._id = id;
-    this._name = name;
-    this._count = count;
-    this._color = pickColor();
-  }
-
-  get id() {
-    return String(this._id);
-  }
-
-  get name() {
-    return String(this._name);
-  }
-
-  get count() {
-    return Boolean(this._count);
-  }
-
-  get color() {
-    return String(this._color);
-  }
+function Task(id, name, count = 1) {
+  return {
+    id: String(id),
+    name: String(name),
+    count: Number(count),
+    color: pickColor(),
+  };
 }
 
-export class TaskDuration {
-  constructor(task, duration) {
-    if (!(task instanceof Task)) {
-      throw new Error("task is not instance of Task");
-    }
-    this._task = task;
-    this._duration = duration;
-  }
-
-  get task() {
-    return this._task;
-  }
-
-  get duration() {
-    return this._duration;
-  }
+function TaskDuration(task, duration) {
+  return {
+    taskId: task.id,
+    duration,
+  };
 }
 
-export let emptyTask = new Task("empty", "Do whatever!");
-export let sleepTask = new Task("sleep", "Sleep");
+let emptyTask = Task("empty", "Do whatever!");
+let sleepTask = Task("sleep", "Sleep");
+
+module.exports = {
+  Minutes,
+  Hours,
+  Task,
+  TaskDuration,
+  emptyTask,
+  sleepTask,
+};
