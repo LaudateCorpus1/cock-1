@@ -15,6 +15,7 @@ COPY api/yarn.lock /app/api/
 RUN yarn install
 
 # add source
+COPY api/config.common.js /app/api/config.common.js
 COPY api/src/ /app/api/src/
 
 CMD ["node", "."]
