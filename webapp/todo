@@ -1,3 +1,24 @@
+now:
+
+- save state in API (resilient against restarts)
+  
+  this means that the config changes won't update, so we'll have to
+  restore state only if the day is running
+
+next up:
+
+- task selection in sidebar (which will replace the "currently working task")
+
+  the tl;dr of this one is that i want to be able to express that i went to do something else
+  instead of the ideal day, so i have a more accurate "current day" representation
+
+  i click on the task in the sidebar, and the "currently working on task" becomes that task
+  where i can mark it as completed and shit
+
+later:
+
+- saving of completion times (in the API)
+
 - better format for config
   basically, think the task stuff though, maybe we should create a TaskManager or something
   idk yet
@@ -6,6 +27,9 @@
   where we view stored task bars day-aligned
 
 - ideal adjusted view
+  we can have a rudimentary task where only the long breaks are shortened (and the ideal bar grows longer over time)
+    this will mean we'll probably break up short breaks and long breaks into separate tasks?
+
   ideal day in config should mark which tasks are important (maybe in order of importance?)
   non-important tasks get shrunk first (emptyTask, then longest tasks not marked as unshrinkable)
 
@@ -24,5 +48,11 @@
 - ideal days (per week)
 
 - calendar tasks
+
+- a "so far" timer that shows how much time you spent overall in the day
+
+- a breakdown of same tasks (and how much time they overall take in the ideal day)
+
+- adding notes for a day, so you know what happened when (if anything was funky)
 
 - ???
