@@ -15,6 +15,14 @@ next up:
   i click on the task in the sidebar, and the "currently working on task" becomes that task
   where i can mark it as completed and shit
 
+- external deploys
+
+  it's time to put this up on a server so i can dev locally without wiping (and accessing cock from other devices)
+
+- mobile view
+
+  if i'm on mobile, maybe don't show the bars but the current task and the buttons?
+
 later:
 
 - saving of completion times (in the API)
