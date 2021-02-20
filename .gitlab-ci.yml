@@ -1,0 +1,29 @@
+variables:
+  BASE_TAG: registry.kek.pw/ivan/cock
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build_api:
+  variables:
+    IMAGE_TAG: $BASE_TAG/api
+  tags:
+    - docker
+  stage: build
+  script:
+    - docker build -t $IMAGE_TAG:$CI_COMMIT_SHORT_SHA -f Dockerfile.api .
+    - docker tag $IMAGE_TAG:$CI_COMMIT_SHORT_SHA $IMAGE_TAG:latest
+    - docker push $IMAGE_TAG:$CI_COMMIT_SHORT_SHA
+    - docker push $IMAGE_TAG:latest
+
+build_webapp:
+  variables:
+    IMAGE_TAG: $BASE_TAG/webapp
+  tags:
+    - docker
+  stage: build
+  script:
+    - docker build -t $IMAGE_TAG:$CI_COMMIT_SHORT_SHA -f Dockerfile.webapp .
+    - docker tag $IMAGE_TAG:$CI_COMMIT_SHORT_SHA $IMAGE_TAG:latest
+    - docker push $IMAGE_TAG:$CI_COMMIT_SHORT_SHA
+    - docker push $IMAGE_TAG:latest

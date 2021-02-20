@@ -1,0 +1,20 @@
+FROM node:alpine
+ENV NODE_ENV=production
+# the second biggest node.js pain in the ass since node_modules
+ENV NODE_PRESERVE_SYMLINKS=1
+
+WORKDIR /app/api
+
+# create link to config (since we're in a dockerized setup, we'll store the config in data/)
+# needs NODE_PRESERVE_SYMLINKS=1 (see above)
+RUN ln -s data/config.js config.js
+
+# install deps
+COPY api/package.json /app/api/
+COPY api/yarn.lock /app/api/
+RUN yarn install
+
+# add source
+COPY api/src/ /app/api/src/
+
+CMD ["node", "."]

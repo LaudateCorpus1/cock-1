@@ -59,11 +59,19 @@ function* connectionHandlerSaga(ws, msgChannel) {
   ]);
 }
 
+function determineWebsocketAddr() {
+  let proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  let host = process.env.REACT_APP_WEBSOCKET_HOST || window.location.host;
+  let path = process.env.REACT_APP_WEBSOCKET_PATH || "/";
+  return `${proto}//${host}${path}`;
+}
+
 function* connectionSaga() {
+  let websocketAddr = determineWebsocketAddr();
   while (true) {
     let [ws, wsChannel, msgChannel] = yield call(
       createWebsocket,
-      process.env.REACT_APP_WEBSOCKET_ADDR
+      websocketAddr
     );
 
     let handlerTask = yield fork(connectionHandlerSaga, ws, msgChannel);

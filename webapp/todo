@@ -1,9 +1,8 @@
 now:
 
-- save state in API (resilient against restarts)
-  
-  this means that the config changes won't update, so we'll have to
-  restore state only if the day is running
+- external deploys
+
+  it's time to put this up on a server so i can dev locally without wiping (and accessing cock from other devices)
 
 next up:
 
@@ -14,10 +13,6 @@ next up:
 
   i click on the task in the sidebar, and the "currently working on task" becomes that task
   where i can mark it as completed and shit
-
-- external deploys
-
-  it's time to put this up on a server so i can dev locally without wiping (and accessing cock from other devices)
 
 - mobile view
 
