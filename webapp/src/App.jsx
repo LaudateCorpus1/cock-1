@@ -113,7 +113,7 @@ function TodayView(props) {
 
   function determineLastCompletedTime(idx = 0) {
     if (completions.length > idx) {
-      return completions[completions.length - (1 + idx)];
+      return completions[completions.length - (idx + 1)];
     } else {
       return startTime;
     }
@@ -128,8 +128,8 @@ function TodayView(props) {
     let task = tasks[taskId];
 
     // determine last completed time
-    let lastCompletedTime = determineLastCompletedTime(1);
-    let completedDuration = completedTime / lastCompletedTime;
+    let lastCompletedTime = determineLastCompletedTime(completions.length - i);
+    let completedDuration = completedTime - lastCompletedTime;
     barSegments.push({ task, duration: completedDuration });
   }
 
