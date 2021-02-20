@@ -112,8 +112,8 @@ function TodayView(props) {
   let { tasks, idealDay, completions, startTime, running, currentTime } = props;
 
   function determineLastCompletedTime(idx = 0) {
-    if (completions.length > idx) {
-      return completions[completions.length - (idx + 1)];
+    if (idx >= 0) {
+      return completions[idx];
     } else {
       return startTime;
     }
@@ -128,7 +128,7 @@ function TodayView(props) {
     let task = tasks[taskId];
 
     // determine last completed time
-    let lastCompletedTime = determineLastCompletedTime(completions.length - i);
+    let lastCompletedTime = determineLastCompletedTime(i - 1);
     let completedDuration = completedTime - lastCompletedTime;
     barSegments.push({ task, duration: completedDuration });
   }
@@ -138,7 +138,7 @@ function TodayView(props) {
   if (running && completions.length !== idealDay.length) {
     let { taskId, duration: idealDuration } = idealDay[completions.length];
     let task = tasks[taskId];
-    let lastCompletedTime = determineLastCompletedTime(0);
+    let lastCompletedTime = determineLastCompletedTime(completions.length - 1);
     let currentTaskDuration = currentTime - lastCompletedTime;
 
     let descTarget = `(target: ${formatDuration(idealDuration)})`;
