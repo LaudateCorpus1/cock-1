@@ -3,7 +3,7 @@ const path = require("path");
 const WebSocket = require("ws");
 const config = require("../config");
 
-const PORT = 3101;
+const PORT = 3100;
 const STATE_DATA_PATH = path.join(__dirname, "..", "data", "state.json");
 
 try {
