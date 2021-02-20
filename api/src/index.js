@@ -53,7 +53,7 @@ let state = {
   running: false,
 };
 
-if (savedState.running) {
+if (savedState && savedState.running) {
   state = savedState;
 }
 
