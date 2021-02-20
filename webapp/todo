@@ -16,11 +16,14 @@ next up:
 
 later:
 
-- saving of completion times (in the API)
+- configuration in webapp
 
-- better format for config
-  basically, think the task stuff though, maybe we should create a TaskManager or something
-  idk yet
+  have a UI for creating tasks, setting sleep time, and setting up the ideal day
+
+- saving of historical data
+
+  so you can look back at previous days
+  we'll basically save the entire state tree for individual days
 
 - historical view
   where we view stored task bars day-aligned
