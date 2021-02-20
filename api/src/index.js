@@ -1,7 +1,26 @@
+const fs = require("fs");
+const path = require("path");
 const WebSocket = require("ws");
 const config = require("../config");
 
-const PORT = 3100;
+const PORT = 3101;
+const STATE_DATA_PATH = path.join(__dirname, "..", "data", "state.json");
+
+try {
+  fs.mkdirSync(path.dirname(STATE_DATA_PATH));
+} catch (err) {
+  if (err.code !== "EEXIST") throw err;
+}
+
+let savedState;
+try {
+  savedState = JSON.parse(fs.readFileSync(STATE_DATA_PATH));
+} catch (err) {
+  if (err.code !== "ENOENT") {
+    console.error("failed loading state");
+    console.error(err);
+  }
+}
 
 let tasks = {};
 for (let task of config.tasks) {
@@ -34,12 +53,26 @@ let state = {
   running: false,
 };
 
+if (savedState.running) {
+  state = savedState;
+}
+
 function serializeState() {
   return JSON.stringify(state);
 }
 
+function saveState() {
+  fs.writeFile(STATE_DATA_PATH, JSON.stringify(state, null, 2), (err) => {
+    if (err) {
+      console.error("error saving state");
+      console.error(err);
+    }
+  });
+}
+
 function updateState(fn) {
   fn();
+  saveState();
   broadcast(serializeState());
 }
 
