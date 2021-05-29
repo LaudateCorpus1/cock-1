@@ -187,29 +187,12 @@ TodayView = connect((state) => ({
   currentTime: state.currentTime,
 }))(TodayView);
 
-function Header() {
-  return (
-    <div className="header">
-      <div className="header-inner">Today's View</div>
-    </div>
-  );
-}
-
 function Main() {
   return (
     <div className="main">
-      <Header />
       <div className="main-inner">
         <TodayView />
       </div>
-    </div>
-  );
-}
-
-function Sidebar() {
-  return (
-    <div className="sidebar">
-      <div className="sidebar-inner">sidebar</div>
     </div>
   );
 }
@@ -238,7 +221,6 @@ function App() {
   return (
     <div className="app">
       <Main />
-      <Sidebar />
     </div>
   );
 }

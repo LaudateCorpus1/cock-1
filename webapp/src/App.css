@@ -1,6 +1,4 @@
 :root {
-  --sidebar-width: 300px;
-  --header-height: 60px;
   --main-padding: 20px;
 }
 
@@ -12,53 +10,23 @@
   /* margin collapsing is the result of someone smoking crack rocks too much */
   position: absolute;
   color: #e7e7e7;
-}
 
-.header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: var(--sidebar-width);
-  width: auto;
-  height: var(--header-height);
-  background-color: #222429;
-}
-
-.header-inner {
-  height: 100%;
-  padding: 10px 20px;
-  position: relative;
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: flex-start;
-  font-size: 25px;
 }
 
 .main {
   padding: var(--main-padding);
-  padding-top: calc(var(--header-height) + var(--main-padding));
-  padding-right: calc(var(--sidebar-width) + var(--main-padding));
+  padding-top: calc(var(--main-padding));
+  padding-right: calc(var(--main-padding));
   min-height: 100%;
+  min-width: 100%;
 }
 
 .main-inner {
   position: relative;
   min-height: 100%;
-}
-
-.sidebar {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  height: auto;
-  width: var(--sidebar-width);
-  background-color: #2c323f;
-  padding: 10px;
-}
-
-.sidebar-inner {
-  position: relative;
 }
 
 .today-view {
