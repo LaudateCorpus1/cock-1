@@ -81,7 +81,10 @@ function startDay() {
   updateState(() => {
     state.running = true;
     state.completions = [];
-    state.startTime = Date.now();
+    let nineAM = new Date();
+    // UTC-5
+    nineAM.setHours(9 + 5, 0, 0, 0);
+    state.startTime = Math.max(nineAm.getTime(), Date.now());
   });
 }
 
