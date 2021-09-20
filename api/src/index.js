@@ -84,7 +84,7 @@ function startDay() {
     let nineAM = new Date();
     // UTC-5
     nineAM.setHours(9 + 5, 0, 0, 0);
-    state.startTime = Math.max(nineAm.getTime(), Date.now());
+    state.startTime = Math.min(nineAM.getTime(), Date.now());
   });
 }
 
